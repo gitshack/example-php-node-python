@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 
 // Check for unix Socket. If not found then process exit and log the error.
-if (!process || !process.env || !process.env.GITSHACK_SOCKET) {
+if (!process || !process.env || !process.env.APP_SOCKET) {
     console.error('No Process Socket Specified');
     process.exit(1);
 }
@@ -24,8 +24,8 @@ process.on('SIGINT', signal => {
 
 // Since we are listening on a unix socket we need to flush it on restarts.
 try {
-    if (fs.existsSync(process.env.GITSHACK_SOCKET)) {
-        fs.unlinkSync(process.env.GITSHACK_SOCKET);
+    if (fs.existsSync(process.env.APP_SOCKET)) {
+        fs.unlinkSync(process.env.APP_SOCKET);
         console.log('Removed Socket');
     }
 } catch(err) {
@@ -35,4 +35,7 @@ try {
 http.createServer(function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end('Node Hello World!');
-}).listen(process.env.GITSHACK_SOCKET);
+}).listen(process.env.APP_SOCKET, 'localhost', function(){
+    fs.chmodSync(process.env.APP_SOCKET, '777');
+    console.log('Update Socket Permissions');
+});
